@@ -73,11 +73,35 @@ are treated as **shared cost**
 
 ---
 
-### 3. Proportional allocation
+### 3A. Allocation rule for shared idle capacity
 
-Shared cost is distributed based on each namespace’s share of total direct cost:
+Idle capacity represents unused cluster resources such as underutilized nodes or over-provisioned capacity.
+
+In this model, idle capacity is treated as part of shared cluster overhead and is allocated proportionally across namespaces based on their share of direct resource consumption.
 
 ```text
+idle_share = namespace_direct_cost / total_direct_cost
+allocated_idle_cost = idle_share × total_idle_cost
+
+```text
+This approach ensures:
+
+all workloads share responsibility for unused capacity
+cost remains fully distributed (no unassigned spend)
+the model remains simple and explainable
+Alternative approaches (future enhancement)
+
+In more advanced models, idle capacity can be:
+
+separated as a platform cost (not allocated to teams)
+charged as a fixed “platform tax”
+exposed as unallocated spend to highlight inefficiency
+
+This allows organizations to choose between:
+
+fairness (proportional allocation)
+visibility (explicit idle cost tracking)
+
 ### 4. Final cost
 namespace_share = namespace_direct_cost / total_direct_cost
 allocated_shared_cost = namespace_share × total_shared_cost
