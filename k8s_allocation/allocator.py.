@@ -1,0 +1,41 @@
+def allocate_k8s_costs(usage_data, pricing):
+    """
+    Allocate Kubernetes cluster cost to namespaces based on usage.
+
+    Steps:
+    1. Calculate direct cost (CPU, memory, storage) per namespace
+    2. Sum total direct cost
+    3. Allocate shared cluster cost proportionally
+    4. Return final cost per namespace
+    """
+
+    direct_costs = {}
+    total_direct_cost = 0
+
+    # === STEP 1: DIRECT COST CALCULATION ===
+    for ns in usage_data:
+        namespace = ns["namespace"]
+
+        cpu_cost = ns["cpu_hours"] * pricing["cpu_per_hour"]
+        memory_cost = ns["memory_gb_hours"] * pricing["memory_per_gb_hour"]
+        storage_cost = ns["storage_gb"] * pricing["storage_per_gb"]
+
+        total_ns_cost = cpu_cost + memory_cost + storage_cost
+
+        direct_costs[namespace] = total_ns_cost
+        total_direct_cost += total_ns_cost
+
+    # === STEP 2: ALLOCATE SHARED COST ===
+    shared_cost = pricing["shared_cluster_cost"]
+    final_allocation = {}
+
+    for namespace, cost in direct_costs.items():
+        if total_direct_cost > 0:
+            share_ratio = cost / total_direct_cost
+            allocated_shared = share_ratio * shared_cost
+        else:
+            allocated_shared = 0
+
+        final_allocation[namespace] = round(cost + allocated_shared, 2)
+
+    return final_allocation
